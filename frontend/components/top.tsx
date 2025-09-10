@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Restaurant } from "@/config/restaurant";
+import { fetchTopRestaurants } from "@/lib/api";
+import { useTopStore } from "@/strore/useTop";
 
 export default function TopRestaurants() {
-    const [top, setTop] = useState([]);
+    // const [top, setTop] = useState([]);
+    const top = useTopStore((state) => state.top);
+    const setTop = useTopStore((state) => state.setTop);
 
     useEffect(() => {
         fetchTop();
     }, []);
 
     const fetchTop = async () => {
-        const res = await axios.get("http://localhost:8000/api.php", {
-            params: { endpoint: "top" },
-        });
-        setTop(res.data);
+        const res = await fetchTopRestaurants()
+        setTop(res);
     };
 
     return (

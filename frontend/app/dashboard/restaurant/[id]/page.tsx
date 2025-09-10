@@ -1,6 +1,7 @@
 "use client";
+import { fetchMetrics } from "@/lib/api";
 import { use, useEffect, useState } from "react";
-import axios from "axios";
+import { useMetrics } from "@/strore/useMetrics";
 import {
     LineChart,
     Line,
@@ -11,6 +12,8 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
+import { useRestaurant } from "@/strore/useRestaurant";
+import { Restaurant } from "@/config/restaurant";
 
 type Metric = {
     date: string;
@@ -24,25 +27,20 @@ export default function RestaurantMetrics({
 }) {
     const { id } = use(params);
 
-    const [metrics, setMetrics] = useState([]);
+    const metrics = useMetrics((state) => state.metrics);
+    const setMetrics = useMetrics((state) => state.setMetrics);
+    const restaurant = useRestaurant((state) => state.resturants);
     const [from, setFrom] = useState("2025-06-24");
     const [to, setTo] = useState("2025-06-30");
 
     useEffect(() => {
-        if (id) fetchMetrics();
+        if (id) fetch_metrics();
     }, [id, from, to]);
 
-    const fetchMetrics = async () => {
+    const fetch_metrics = async () => {
         try {
-            const res = await axios.get("http://localhost:8000/api.php", {
-                params: {
-                    endpoint: "metrics",
-                    restaurant_id: id,
-                    from,
-                    to,
-                },
-            });
-            setMetrics(res.data);
+            const res = await fetchMetrics(id, from, to);
+            setMetrics(res);
         } catch (err) {
             console.error(err);
         }
@@ -50,7 +48,13 @@ export default function RestaurantMetrics({
 
     return (
         <div className="p-5">
-            <h1 className="text-3xl px-5">Metrics for Restaurant {id}</h1>
+            <h1 className="text-3xl px-5">
+                Metrics for Restaurant{" "}
+                {
+                    restaurant.find((r: Restaurant) => r.id === parseInt(id))
+                        ?.name
+                }
+            </h1>
             <div className="px-5">
                 <label>
                     From:{" "}
@@ -69,7 +73,7 @@ export default function RestaurantMetrics({
                     />
                 </label>
             </div>
-            <hr  className="mt-5 border-black"/>
+            <hr className="mt-5 border-black" />
 
             <div style={{ marginTop: "2rem", height: "400px" }}>
                 <ResponsiveContainer width="100%" height="100%">

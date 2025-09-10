@@ -7,3 +7,13 @@ php -S localhost:8000
 ```
 bun dev
 ```
+or 
+```
+npm run dev
+```
+
+## Run Full Project with
+```
+chmod +x bash.sh
+./bash.sh
+```

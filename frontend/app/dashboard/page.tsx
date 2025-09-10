@@ -1,28 +1,29 @@
 "use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
 import Link from "next/link";
-import { Restaurant } from "@/config/restaurant";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { fetchRestaurants } from "@/lib/api";
 import TopRestaurants from "@/components/top";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Restaurant } from "@/config/restaurant";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useRestaurant } from "@/strore/useRestaurant";
 
 export default function Home() {
-    const [restaurants, setRestaurants] = useState([]);
+    // const [restaurants, setRestaurants] = useState([]);
+    const restaurants = useRestaurant((state) => state.resturants);
+    const setRestaurants = useRestaurant((state) => state.setRestaurants);
     const [q, setQ] = useState("");
     const [sort, setSort] = useState("name");
 
     useEffect(() => {
-        fetchRestaurants();
+        fetch_restaurants();
     }, [q, sort]);
 
-    const fetchRestaurants = async () => {
+    const fetch_restaurants = async () => {
         try {
-            const res = await axios.get("http://localhost:8000/api.php", {
-                params: { endpoint: "restaurants", q, sort },
-            });
-            setRestaurants(res.data);
+            const res = await fetchRestaurants(q, sort);
+            setRestaurants(res);
         } catch (err) {
             console.error(err);
         }
