@@ -3,6 +3,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header('Content-Type: application/json');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -10,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Existing code below
-header('Content-Type: application/json');
 
 // Load data
 $restaurants = json_decode(file_get_contents('restaurants.json'), true);
@@ -36,6 +35,27 @@ function filterRestaurants($restaurants, $q = '', $sort = '') {
     return array_values($restaurants);
 }
 
+
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Filter orders by restaurant, date range, order amount, and hour.
+ *
+ * @param array $orders List of orders
+ * @param int $restaurantId Filter by restaurant ID (optional)
+ * @param string $from Filter by order time (YYYY-MM-DD HH:MM:SS) (optional)
+ * @param string $to Filter by order time (YYYY-MM-DD HH:MM:SS) (optional)
+ * @param int $amountMin Filter by minimum order amount (optional)
+ * @param int $amountMax Filter by maximum order amount (optional)
+ * @param int $hourMin Filter by minimum hour of day (0-23) (optional)
+ * @param int $hourMax Filter by maximum hour of day (0-23) (optional)
+ * @return array Filtered list of orders
+ */
 function getOrdersByRestaurant($orders, $restaurantId, $from = null, $to = null, $amountMin = null, $amountMax = null, $hourMin = null, $hourMax = null) {
     $filtered = array_filter($orders, function($o) use ($restaurantId, $from, $to, $amountMin, $amountMax, $hourMin, $hourMax) {
         if ($restaurantId && $o['restaurant_id'] != $restaurantId) return false;
@@ -56,6 +76,25 @@ function getOrdersByRestaurant($orders, $restaurantId, $from = null, $to = null,
     return array_values($filtered);
 }
 
+
+
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Calculate daily metrics from an array of orders.
+ *
+ * @param array $orders List of orders
+ * @return array List of daily metrics, each containing:
+ *  - date (string)
+ *  - orders (int)
+ *  - revenue (int)
+ *  - average_order_value (float)
+ *  - peak_hour (int)
+ */
 function dailyMetrics($orders) {
     $daily = [];
     foreach ($orders as $o) {
@@ -84,6 +123,27 @@ function dailyMetrics($orders) {
     return $result;
 }
 
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------
+/**
+ * Get top N restaurants by revenue.
+ *
+ * @param array $restaurants List of restaurants
+ * @param array $orders List of orders
+ * @param string $from Filter by minimum date (optional)
+ * @param string $to Filter by maximum date (optional)
+ * @param int $limit Number of top restaurants to return (default 3)
+ * @return array List of top N restaurants, each containing:
+ *  - id (int)
+ *  - name (string)
+ *  - location (string)
+ *  - cuisine (string)
+ *  - revenue (int)
+ *  - orders (int)
+ */
 function topRestaurants($restaurants, $orders, $from = null, $to = null, $limit = 3) {
     $revenueMap = [];
     foreach ($restaurants as $r) {
